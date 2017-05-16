@@ -2,25 +2,29 @@ import Expo from 'expo';
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { increment, decrement, reset } from './src/actions';
-import ContatoreStore from './src/ContatoreStore';
+import store from './src/store';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      conto: ContatoreStore.getConto()
-    };
     this.updateStatus = this.updateStatus.bind(this);
+    this.state = {
+      conto: store.getState().conto,
+      unsubscribe: store.subscribe(this.updateStatus)
+    };
   }
-  componentDidMount() {
-    ContatoreStore.addChangeListener(this.updateStatus);
-  }
+  // componentDidMount() {
+  //   const unsubscribe = store.subscribe(this.updateStatus);
+  //   // it's discouraged to save state in the componentDidMount, better to do in the constructor
+  //   this.setState({ unsubscribe: unsubscribe })
+  // }
   updateStatus() {
-    this.setState({ conto: ContatoreStore.getConto() })
+    this.setState({ conto: store.getState().conto })
   }
 
   componentWillUnmount() {
-    ContatoreStore.removeChangeListener(this.updateStatus);
+    // ContatoreStore.removeChangeListener(this.updateStatus);
+    this.state.unsubscribe();
   }
 
   render() {
@@ -29,17 +33,17 @@ class App extends React.Component {
         <Text>Contatore</Text>
         <Text style={styles.conto}>Conto: {this.state.conto}</Text>
         <TouchableOpacity
-          onPress={increment}
+          onPress={() => store.dispatch(increment())}
           style={styles.button}>
           <Text style={styles.text}>+</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={decrement}
+          onPress={() => store.dispatch(decrement())}
           style={styles.button}>
           <Text style={styles.text}>-</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={reset}
+          onPress={() => store.dispatch(reset())}
           style={styles.button}>
           <Text style={styles.text}>0</Text>
         </TouchableOpacity>
